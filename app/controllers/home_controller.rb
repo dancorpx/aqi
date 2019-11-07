@@ -41,8 +41,8 @@ class HomeController < ApplicationController
 
   def zipcode
     @zip_query = params[:zipcode]
-    if params[:zipcode] == ""
-      @zip_query = "empty search field"
+    if params[:zipcode] === ""
+      @final_output = "Empty search field"
     elsif params[:zipcode]
       #do API stuff
 
@@ -52,15 +52,16 @@ class HomeController < ApplicationController
 
       @url = 'https://api.waqi.info/feed/'+ @zip_query + '/?token=5bc9d9e4e31f41d07c589fae2cf23b4e2dfbbe90'
       @uri = URI(@url)
-      @response = Net::HTTP.get(@uri)
-      @output = JSON.parse(@response)
+      @response = Net::HTTP.get_response(@uri)
 
-      if @output.empty?
-          @final_output = "Error"
-          @city = "Please enter a city or location"
+      @output = JSON.parse(@response.body)
+
+      if @output['status'] === "ok"
+        @final_output = @output['data']['aqi']
+        @city = @output['data']['city']['name']  
       else
-          @final_output = @output['data']['aqi']
-          @city = @output['data']['city']['name']
+        @final_output = "Error"
+        @city = "Please enter a city or location"  
       end
 
       if @final_output == "Error"
